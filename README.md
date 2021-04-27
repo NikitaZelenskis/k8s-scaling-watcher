@@ -1,5 +1,5 @@
 ## Goal
-This is a stress testing tool and can be used for other testing purposes. 
+This is a web stress testing tool and can be used for other testing purposes. 
 It can be hard to test your web application because of security and/or other reasons. This tool allows to bypass most if not all of security features.
 This is done by creating containers with vpn and browsers that go to specified link and execude specified js code.
 
