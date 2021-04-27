@@ -1,0 +1,11 @@
+{
+  "vpnPriorities": [
+    "^(de|fr|uk|nl|pl)",
+    "^(ua|ru)",
+    "^([^(uca).]|.[^sua]).*"
+  ],
+  "timeBetweenContainers" : 5,
+  "maxPingTime" : 20,
+  "pageReloadTime" : 900,
+  "linkToGo": "https://www.example.com"
+}

@@ -1,0 +1,140 @@
+#controller
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: controller
+  labels:
+    app: controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: controller
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: controller
+        tier: backend
+    spec:
+      volumes:
+      - name: container-app
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/controller/app
+          type: Directory
+      - name: vpn-configs
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/vpn_configs
+          type: Directory
+      - name: settings-fle
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/settings.json
+          type: File
+
+      containers:
+      - name: controller
+        image: vpncontroller
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        command: ["go", "run", "/go/app/main.go"]
+        volumeMounts:
+          - mountPath: /go/app
+            name: container-app
+          - mountPath: /vpn_configs
+            name: vpn-configs
+          - mountPath: /go/app/settings.json
+            name: settings-fle
+---
+#controller-service
+apiVersion: v1
+kind: Service
+metadata:
+  name: controller
+  labels:
+    app: controller
+    tier: backend
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: controller
+    tier: backend
+---
+#executor
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: executor
+  labels:
+    app: executor
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: executor
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: executor
+        tier: backend
+          
+    spec:
+      dnsPolicy: "None"
+      dnsConfig:
+        nameservers:
+          - 10.96.0.10
+          - 8.8.8.8
+        searches:
+          - default.svc.cluster.local 
+          - svc.cluster.local 
+          - cluster.local
+        
+      volumes:
+      - name: executor
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/executor/files
+          type: Directory
+      - name: tun
+        hostPath:
+          path: /dev/net/tun
+          type: CharDevice
+      - name: vpn-configs
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/vpn_configs
+          type: Directory
+      - name: vpn-passwords
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/pass.txt
+          type: File
+      - name: browser-script
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/browser-script.js
+          type: File
+
+      containers:
+      - name: executor
+        image: openvpnclient
+        imagePullPolicy: Never
+        command: ["/bin/sh", "-c"]
+        args: ["node /vpn/dist/main.js"]
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"] 
+        volumeMounts:
+          - mountPath: /vpn
+            name: executor
+          - mountPath: /dev/net/tun
+            name: tun
+          - mountPath: /vpn_configs
+            name: vpn-configs
+          - mountPath: /vpn/pass.txt
+            name: vpn-passwords
+          - mountPath: /script/browser-script.js
+            name: browser-script
+
+        resources:
+          limits:
+            cpu: "0.15"

@@ -1,0 +1,9 @@
+*.ovpn
+controller/app/src/*
+executor/files/node_modules/*
+executor/files/package-lock.json
+.vscode/*
+executor/files/.vscode/*
+deployment.yaml
+browser-script.js
+pass.txt

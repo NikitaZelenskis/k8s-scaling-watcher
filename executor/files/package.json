@@ -1,0 +1,37 @@
+{
+  "name": "files",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "puppeteer": "^9.0.0",
+    "ws": "^7.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.42",
+    "@types/ws": "^7.4.2",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "eslint": "^7.25.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-mocha": "^8.1.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-unicorn": "^27.0.0",
+    "mocha": "^8.3.2",
+    "prettier": "2.2.1",
+    "typescript": "^4.2.4"
+  },
+  "scripts": {
+    "eslint": "([ \"$CI\" = true ] && eslint --ext js --ext ts --quiet -f codeframe . || eslint --ext js --ext ts .)",
+    "eslint-fix": "eslint --ext js --ext ts --fix .",
+    "lint": "npm run eslint",
+    "test": "npm run tsc && npm run lint --silent && mocha",
+    "build": "tsc -p tsconfig.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}
