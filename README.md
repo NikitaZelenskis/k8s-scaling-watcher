@@ -44,7 +44,7 @@ deployment.yaml by default has 5 replicas of executors
 ```bash
 kubectl scale deployments/executor --replicas=5
 ```
-Or send POST request to `http://container/replicas` with `{'amount': 5}`
+Or send POST request to `http://controller/replicas` with `{'amount': 5}`
 
 ### Remove all containers
 ```bash
