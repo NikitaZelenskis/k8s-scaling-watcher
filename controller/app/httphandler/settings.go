@@ -18,6 +18,9 @@ type Settings struct {
 	MaxPingTime           int      `json:"maxPingTime"`
 	PageReloadTime        int      `json:"pageReloadTime"`
 	LinkToGo              string   `json:"linkToGo"`
+	MaxDownloadSpeed      int      `json:"maxDownloadSpeed"`
+	MaxUploadSpeed        int      `json:"maxUploadSpeed"`
+	IpLookupLink          string   `json:"ipLookupLink"`
 }
 
 func NewSettings() Settings {
@@ -39,5 +42,8 @@ func (s *Settings) loadSettingsFromFile() {
 		fmt.Println(err)
 	}
 
-	json.Unmarshal(byteValue, &s)
+	err = json.Unmarshal(byteValue, &s)
+	if err != nil {
+		fmt.Println(err)
+	}
 }

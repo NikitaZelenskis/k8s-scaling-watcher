@@ -7,5 +7,8 @@
   "timeBetweenContainers" : 5,
   "maxPingTime" : 20,
   "pageReloadTime" : 900,
-  "linkToGo": "https://www.example.com"
+  "linkToGo": "https://www.example.com",
+  "maxDownloadSpeed": 1048570,
+  "maxUploadSpeed": 1048570,
+  "ipLookupLink": "https://api.my-ip.io/ip"
 }

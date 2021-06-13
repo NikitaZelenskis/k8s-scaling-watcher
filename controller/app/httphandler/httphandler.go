@@ -1,6 +1,7 @@
 package httphandler
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -98,10 +99,7 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 		var response string
 		switch string(message) {
 		case "getSettings":
-			response = "{\"waitFor\":" + strconv.FormatInt(h.waitFor(), 10) +
-				", \"maxPingTime\":" + strconv.Itoa(h.settings.MaxPingTime) +
-				", \"pageReloadTime\":" + strconv.Itoa(h.settings.PageReloadTime) +
-				", \"linkToGo\":\"" + h.settings.LinkToGo + "\"}"
+			response = h.getSettingsJson()
 		case "getConfig":
 			response = "{\"configFile\":\"" + h.configHandler.GetAvalibleConfig(conn.RemoteAddr().String()) + "\"}"
 		}
@@ -112,6 +110,32 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 			return
 		}
 	}
+}
+
+func (h *HTTPHandler) getSettingsJson() string {
+	var tmp struct {
+		WaitFor          int64  `json:"waitFor"`
+		MaxPingTime      int    `json:"maxPingTime"`
+		PageReloadTime   int    `json:"pageReloadTime"`
+		LinkToGo         string `json:"linkToGo"`
+		MaxDownloadSpeed int    `json:"maxDownloadSpeed"`
+		MaxUploadSpeed   int    `json:"maxUploadSpeed"`
+		IpLookupLink     string `json:"ipLookupLink"`
+	}
+	tmp.WaitFor = h.waitFor()
+	tmp.MaxPingTime = h.settings.MaxPingTime
+	tmp.PageReloadTime = h.settings.PageReloadTime
+	tmp.LinkToGo = h.settings.LinkToGo
+	tmp.MaxDownloadSpeed = h.settings.MaxDownloadSpeed
+	tmp.MaxUploadSpeed = h.settings.MaxUploadSpeed
+	tmp.IpLookupLink = h.settings.IpLookupLink
+
+	byteArray, err := json.Marshal(&tmp)
+	if err != nil {
+		log.Println(err)
+		return "{error : 'can't parse settings'}"
+	}
+	return string(byteArray)
 }
 
 func (h *HTTPHandler) write(conn *websocket.Conn) {

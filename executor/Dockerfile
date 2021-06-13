@@ -3,7 +3,7 @@ FROM node:16-slim
 # Note: this installs the necessary libs to make the bundled version of Chromium that Puppeteer
 # installs, work.
 RUN apt-get update \
-    && apt-get install -y wget openvpn gnupg iputils-ping wondershaper \
+    && apt-get install -y wget openvpn gnupg iputils-ping\
     && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update \
@@ -34,8 +34,6 @@ RUN npm i puppeteer \
     && chown -R openvpnclient:openvpnclient /vpn/node_modules \
     && npm i axios && npm i ws 
 
-#set maximum download and upload speed to 1MB
-RUN wondershaper -a tun0 -d 1024 -u 1024
 
 # Run everything after as non-privileged user.
 # USER pptruser

@@ -6,7 +6,7 @@ import { Browser } from './browser.js';
 export class VPNManager {
   static configsFolder = '/vpn_configs/';
   static passwordsFile = '/vpn/pass.txt';
-  private ipLookupLink = 'https://api.my-ip.io/ip';
+  private ipLookupLink: string;
   private controllerLink = 'controller';
   private hostIp: string;
   private configFile: string;
@@ -20,7 +20,6 @@ export class VPNManager {
   }
 
   public async run(): Promise<VPNManager> {
-    this.hostIp = await this.lookupIp();
     await this.waitForController();
     this.socket = new WebSocket('ws://' + this.controllerLink + '/ws');
 
@@ -53,7 +52,13 @@ export class VPNManager {
     const sleepTime = message.waitFor * 1000;
     this.maxPingTime = message.maxPingTime;
     this.browser.pageReloadTime = message.pageReloadTime * 1000;
-    this.browser.streamURL = message.linkToGo;
+    this.browser.linkToGo = message.linkToGo;
+    await this.browser.setBandwidthLimit(
+      message.maxDownloadSpeed,
+      message.maxUploadSpeed
+    );
+    this.ipLookupLink = message.ipLookupLink;
+    this.hostIp = await this.lookupIp();
     console.log('Sleeping for: ' + message.waitFor);
     await this.sleep(sleepTime);
     this.socket.send('getConfig');
@@ -77,7 +82,9 @@ export class VPNManager {
   }
 
   private async lookupIp(): Promise<string> {
-    return (await axios.get(this.ipLookupLink, { timeout: 10000 })).data
+    return (
+      await axios.get(this.ipLookupLink, { timeout: this.maxPingTime * 1000 })
+    ).data;
   }
 
   // recursive function that waits for connection to controller
@@ -110,18 +117,18 @@ export class VPNManager {
   }
 
   private startOpenVPN(configFile: string) {
-    
     console.log('Using ' + configFile + ' config file');
     const args = [
       '--route',
       '10.0.0.0',
       '255.0.0.0',
       'net_gateway', // ignore ips in that range
+      // these ip's are reserved by k8s
       '--config',
       VPNManager.configsFolder + configFile, // use configfile
       '--auth-user-pass',
       VPNManager.passwordsFile, // password for config
-      '--daemon',
+      '--daemon', // run in background otherwise it blocks
     ];
     console.log('Starting up openvpn');
     this.openVPNProc = spawn('openvpn', args);
@@ -132,21 +139,26 @@ export class VPNManager {
     let pingCount = 0;
     console.log('Waiting for ip to change');
     console.log('Current ip: ' + this.hostIp);
+    // pinger recursivly calls itself until ip changes
+    // or until pinged max amount of times
     async function pinger() {
       if ((await vm.lookupIp()) === vm.hostIp) {
         pingCount++;
+        await vm.sleep(1000);
+        console.log('Connecting...');
         if (pingCount <= vm.maxPingTime) {
           await pinger();
         } else {
           return false;
         }
-        console.log('Connecting...');
-        await vm.sleep(1000);
       }
     }
     try {
       await pinger();
     } catch {
+      return false;
+    }
+    if (pingCount > this.maxPingTime) {
       return false;
     }
     console.log('My ip is: ' + (await vm.lookupIp()));

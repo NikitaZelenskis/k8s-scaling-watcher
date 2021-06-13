@@ -37,6 +37,13 @@ Time before timeout of openvpn configuration in seconds.
 E.G. time to wait for openvpn connection to be created.
 * `pageReloadTime` _Type: number_  
 Will refresh page every `pageReloadTime` seconds.
+* `maxDownloadSpeed` _Type: number_  
+Maximum download speed. _This feature doesn't seem to be working correctly_
+* `maxUploadSpeed` _Type: number_  
+Maximum upload speed. _This feature doesn't seem to be working correctly_
+* `ipLookupLink` _Type: string_  
+Link to service that will give your public ip address. Needs to return plain text.
+
 
 #### **`browser-script.js`**
 To execute js in browser when page is loaded you need to create `browser-script.js` in root folder by default.
