@@ -1,25 +1,25 @@
 # Project Structure
-#### Coding style
+### Coding style
 For js all rules are defined in `.eslintrc.cjs`.
 Run `npm run eslint` to view all formating errors.
 Run `npm run eslint-fix` to automatically format all files.
 
-#### Kubernetes
+### Kubernetes
 Kuberenetes is used as container orchestrator for this project.
 
-#### **`template-deployment.yaml`** and **`setup.sh`**
+### **`template-deployment.yaml`** and **`setup.sh`**
 Kubernetes does not have relative paths thus there exists `setup.sh` that generates deployment from `template-deployment.yaml` with relative paths.  
 `setup.sh` is also used to execute boilerplate setup code.
 
-#### **`executor`**
+### **`executor`**
 Inside executor folder there is Dockerfile which creates container with puppeteer and openvpn.  
 `executor/files` contains all files that are used to create executor container. All code in `executor/files` is in typescript(TS) and is compiled into folder `executor/files/dist`. Currently all TS code needs to be compiled seperatly from docker image.
 
-#### **`controller`**
+### **`controller`**
 Controller is made from standard go image. Then application is build and run.
 Controller application is a webserver used to communicate between executor containers and to keep track which executor container uses which vpn configuration.
 `controller/app` has all files for creating container image.  
 `controller/app/httphandler` creates and handles all connections from other containers using websocket. Also stores all settings from `settings.json` and `vpn-settings.json`
 `controller/app/confighandler` keeps track which executor container uses which vpn configuration.
-#### **`settings.json`** stores all initial settings for controller and executor. 
+### **`settings.json`** stores all initial settings for controller and executor. 
 
