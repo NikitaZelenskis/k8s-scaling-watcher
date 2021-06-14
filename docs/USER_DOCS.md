@@ -1,14 +1,14 @@
 # Documentation for users
-#### **`template-deployment.yaml`** and **`deployment.yaml`**
+### **`template-deployment.yaml`** and **`deployment.yaml`**
 To change default file and folder locations there is a possibility to change them in `template-deployment.yaml` or `deployment.yaml` by changing path variable. 
 
-#### **`setup.sh`**
+### **`setup.sh`**
 `setup.sh` has 3 arugments.  
 `-h` or `--help` to show usage of `setup.sh`.  
 `-b` or `--build` to build all docker images  
 `-d` or `--deplotment` to generate deployment file.  
 By default uses `-b -d`
-#### **`vpn_configs` and password on .ovpn file**
+### **`vpn_configs` and password on .ovpn file**
 By default all openvpn configurations go to `vpn_configs` folder from root.  
 
 If configuration file uses password you need to create a file with folloing format:
@@ -55,7 +55,7 @@ Then `vpn-settings.json` should look like this:
 ```
 
 
-#### **`settings.json`**
+### **`settings.json`**
 * `linkToGo` _Type: string_  
 Link that browsers will initially go to.
 * `vpnPriorities` _Type: string[]_  
@@ -85,5 +85,5 @@ Maximum upload speed. _This feature doesn't seem to be working correctly_
 Link to service that will give your public ip address. Needs to return plain text.
 
 
-#### **`browser-script.js`**
+### **`browser-script.js`**
 To execute js in browser when page is loaded you need to create `browser-script.js` in root folder by default.
