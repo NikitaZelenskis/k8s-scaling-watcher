@@ -19,7 +19,7 @@ Inside executor folder there is Dockerfile which creates container with puppetee
 Controller is made from standard go image. Then application is build and run.
 Controller application is a webserver used to communicate between executor containers and to keep track which executor container uses which vpn configuration.
 `controller/app` has all files for creating container image.  
-`controller/app/httphandler` creates and handles all connections from other containers using websocket.  
-`controller/app/confighandler` stores all settings for project and keeps track which executor container uses which vpn configuration.
+`controller/app/httphandler` creates and handles all connections from other containers using websocket. Also stores all settings from `settings.json` and `vpn-settings.json`
+`controller/app/confighandler` keeps track which executor container uses which vpn configuration.
 #### **`settings.json`** stores all initial settings for controller and executor. 
 

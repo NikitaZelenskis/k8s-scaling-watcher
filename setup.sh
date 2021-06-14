@@ -40,6 +40,16 @@ function check_docker (){
   fi
 }
 
+function create_empty_files (){
+  mkdir vpn_configs > /dev/null 2>&1
+  touch browser-script.js
+  if [[ !  (-f vpn-settings.json) ]];then
+    touch vpn-settings.json
+    echo "{\"settings\": []}" > vpn-settings.json 
+  fi
+}
+
+create_empty_files
 check_docker
 
 if [[ -z "$1" ]];then

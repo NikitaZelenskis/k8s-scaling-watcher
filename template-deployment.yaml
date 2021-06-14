@@ -30,6 +30,10 @@ spec:
         hostPath:
           path: {{PATH-TO-CHANGE}}/settings.json
           type: File
+      - name: vpn-passwords
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/vpn-settings.json
+          type: File
 
       containers:
       - name: controller
@@ -45,6 +49,8 @@ spec:
             name: vpn-configs
           - mountPath: /go/app/settings.json
             name: settings-fle
+          - mountPath: /go/app/vpn-settings.json
+            name: vpn-passwords
 ---
 #controller-service
 apiVersion: v1
@@ -105,10 +111,6 @@ spec:
         hostPath:
           path: {{PATH-TO-CHANGE}}/vpn_configs
           type: Directory
-      - name: vpn-passwords
-        hostPath:
-          path: {{PATH-TO-CHANGE}}/pass.txt
-          type: File
       - name: browser-script
         hostPath:
           path: {{PATH-TO-CHANGE}}/browser-script.js
@@ -130,8 +132,6 @@ spec:
             name: tun
           - mountPath: /vpn_configs
             name: vpn-configs
-          - mountPath: /vpn/pass.txt
-            name: vpn-passwords
           - mountPath: /script/browser-script.js
             name: browser-script
 

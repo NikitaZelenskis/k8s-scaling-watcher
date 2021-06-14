@@ -7,3 +7,4 @@ executor/files/.vscode/*
 deployment.yaml
 browser-script.js
 pass.txt
+vpn-settings.json

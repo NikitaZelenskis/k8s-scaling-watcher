@@ -22,15 +22,17 @@ Please use this tool only as last resort if everything else fails
 ```
 This wil generate 2 docker images and deployment file for kubernetes.
 
-2. Create folder **`vpn_configs`** and put all **.ovpn** file in there. If they have password put username and pass in **`pass.txt`** as follows:
+2. Put all **.ovpn** files in to **`vpn_configs`** folder.\
+If configs have passwords create a file inside **`vpn_configs`** with username and password as follows:
 ```
 username
 password
 ```
+Then link config files to password inside **`vpn-settings.json`**. See [user documentation](../master/docs/USER_DOCS.md) for more detaild explanation.
 
 3. Change **linkToGo** and other settings in **`settings.json`**
 
-4. In root directory create file **`browser-script.js`**  
+4. Change **`browser-script.js`** with script you want to run.\  
 Everything in browser-script.js will be executed when the browser page is loaded.
 
 ## Usage

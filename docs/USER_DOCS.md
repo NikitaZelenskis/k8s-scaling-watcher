@@ -8,13 +8,53 @@ To change default file and folder locations there is a possibility to change the
 `-b` or `--build` to build all docker images  
 `-d` or `--deplotment` to generate deployment file.  
 By default uses `-b -d`
-#### **`vpn_configs` and `pass.txt`**
+#### **`vpn_configs` and password on .ovpn file**
 By default all openvpn configurations go to `vpn_configs` folder from root.  
-If configuration files use password they will use `pass.txt` folder from root by default in following format:
+
+If configuration file uses password you need to create a file with folloing format:
 ```
 username
 password
 ```
+
+Then in `vpn-settings.json` link file to config as follows:
+```
+{
+  "settings": [
+    {"vpnSelector": "config-name", "passFile": "password file"}
+  ]
+}
+```
+* `vpnSelector` uses [go implemeantation of RE2 regexp](https://github.com/google/re2/wiki/Syntax) to select configurations for which password file is ment.
+* `passFile` is password file name inside `vpn_configs`
+
+Multiple configurations can be added.
+##### Example:
+```
+k8s-scaling-watcher/
+├─ vpn_configs/
+│  ├─ config1.ovpn
+│  ├─ de-config1.ovpn
+│  ├─ de-password.txt
+│  ├─ nl-config1.ovpn
+│  ├─ nl-config2.ovpn
+│  ├─ nl-password.txt
+```
+
+`config1.ovpn` has no password.\
+`nl-config1.ovpn` and `nl-config2.ovpn` have same password stored in `nl-password.txt`\
+and de-config1.ovpn has password that is stored in `de-password.txt`.\
+Then `vpn-settings.json` should look like this:
+```json
+{
+  "settings": [
+    {"vpnSelector": "^(nl)", "passFile": "nl-password.txt"},
+    {"vpnSelector": "^(de)", "passFile": "de-password.txt"}
+  ]
+}
+```
+
+
 #### **`settings.json`**
 * `linkToGo` _Type: string_  
 Link that browsers will initially go to.

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -30,6 +31,7 @@ type HTTPHandler struct {
 	clientIps            map[net.Addr]*websocket.Conn
 	kubernetesAPI        KubernetesAPI
 	settings             Settings
+	vpnSettings          VPNSettings
 }
 
 //NewHTTPHandler creates new instance of HTTPHandler
@@ -37,6 +39,7 @@ func NewHTTPHandler() HTTPHandler {
 	httphandler := HTTPHandler{}
 	httphandler.timeForNextContainer = time.Now().Unix()
 	httphandler.settings = NewSettings()
+	httphandler.vpnSettings = NewVPNSettings()
 	httphandler.configHandler = configHandler.NewConfigHandler(httphandler.settings.VpnPriorities)
 	httphandler.upgrader = websocket.Upgrader{}
 	httphandler.clientIps = make(map[net.Addr]*websocket.Conn)
@@ -44,47 +47,19 @@ func NewHTTPHandler() HTTPHandler {
 	return httphandler
 }
 
-func (h *HTTPHandler) getUserIP(r *http.Request) string {
-	return r.RemoteAddr
-}
-
 //GetConfigHandlerFunc gives random config file name
 func (h *HTTPHandler) GetConfigHandlerFunc(w http.ResponseWriter, r *http.Request) {
-	configName := h.configHandler.GetAvalibleConfig(h.getUserIP(r))
+	configName := h.configHandler.GetAvalibleConfig(r.RemoteAddr)
 	fmt.Fprintf(w, configName)
 }
 
 //ResetHandlerFunc handles request for resetting ip
 func (h *HTTPHandler) ResetHandlerFunc(w http.ResponseWriter, r *http.Request) {
-	h.configHandler.ResetConfig(h.getUserIP(r))
-}
-
-//waitFor stores and calculates how long to wait
-func (h *HTTPHandler) waitFor() int64 {
-	var timeBetweenContainers int64 = h.settings.TimeBetweenContainers
-	var newLatestTime int64
-
-	now := time.Now().Unix()
-
-	if h.timeForNextContainer < now {
-		newLatestTime = now + timeBetweenContainers
-	} else {
-		newLatestTime = h.timeForNextContainer + timeBetweenContainers
-	}
-	h.timeForNextContainer = newLatestTime
-
-	waitFor := newLatestTime - now
-	return waitFor
+	h.configHandler.ResetConfig(r.RemoteAddr)
 }
 
 func (h *HTTPHandler) reader(conn *websocket.Conn) {
-	//close connection and delete it from map
-	defer func() {
-		h.configHandler.ResetConfig(conn.RemoteAddr().String())
-		delete(h.clientIps, conn.RemoteAddr())
-		conn.Close()
-		log.Println("Connection with " + conn.RemoteAddr().String() + " is closed")
-	}()
+	defer h.closeConnection(conn)
 	//set deadline to 60 secs from now
 	conn.SetReadDeadline(time.Now().Add(pongWait))
 	// if deadline is not met then close connection.
@@ -99,9 +74,9 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 		var response string
 		switch string(message) {
 		case "getSettings":
-			response = h.getSettingsJson()
+			response = h.getSettingsResoponse()
 		case "getConfig":
-			response = "{\"configFile\":\"" + h.configHandler.GetAvalibleConfig(conn.RemoteAddr().String()) + "\"}"
+			response = h.getConfigResponse(conn)
 		}
 
 		conn.SetWriteDeadline(time.Now().Add(writeWait))
@@ -112,7 +87,46 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 	}
 }
 
-func (h *HTTPHandler) getSettingsJson() string {
+//close connection and delete it from map
+func (h *HTTPHandler) closeConnection(conn *websocket.Conn) {
+	h.configHandler.ResetConfig(conn.RemoteAddr().String())
+	delete(h.clientIps, conn.RemoteAddr())
+	conn.Close()
+	log.Println("Connection with " + conn.RemoteAddr().String() + " is closed")
+}
+
+func (h *HTTPHandler) getConfigResponse(conn *websocket.Conn) string {
+	var tmp struct {
+		ConfigFile   string `json:"configFile"`
+		PasswordFile string `json:"passFile"`
+	}
+	tmp.ConfigFile = h.configHandler.GetAvalibleConfig(conn.RemoteAddr().String())
+	tmp.PasswordFile = h.findConfigPassFile(tmp.ConfigFile)
+
+	byteArray, err := json.Marshal(&tmp)
+	if err != nil {
+		log.Println(err)
+		return "{\"error\" : \"can't parse vpn settings\"}"
+	}
+
+	return string(byteArray)
+}
+
+func (h *HTTPHandler) findConfigPassFile(config string) string {
+	for i := 0; i < len(h.vpnSettings.VpnConfigs); i++ {
+		matched, err := regexp.MatchString(h.vpnSettings.VpnConfigs[i].VPNSelector, config)
+		if err != nil {
+			fmt.Println(err)
+		}
+		if matched {
+			return h.vpnSettings.VpnConfigs[i].PasswordFile
+		}
+	}
+
+	return ""
+}
+
+func (h *HTTPHandler) getSettingsResoponse() string {
 	var tmp struct {
 		WaitFor          int64  `json:"waitFor"`
 		MaxPingTime      int    `json:"maxPingTime"`
@@ -133,9 +147,27 @@ func (h *HTTPHandler) getSettingsJson() string {
 	byteArray, err := json.Marshal(&tmp)
 	if err != nil {
 		log.Println(err)
-		return "{error : 'can't parse settings'}"
+		return "{error : \"can't parse settings\"}"
 	}
 	return string(byteArray)
+}
+
+//waitFor stores and calculates how long to wait
+func (h *HTTPHandler) waitFor() int64 {
+	var timeBetweenContainers int64 = h.settings.TimeBetweenContainers
+	var newLatestTime int64
+
+	now := time.Now().Unix()
+
+	if h.timeForNextContainer < now {
+		newLatestTime = now + timeBetweenContainers
+	} else {
+		newLatestTime = h.timeForNextContainer + timeBetweenContainers
+	}
+	h.timeForNextContainer = newLatestTime
+
+	waitFor := newLatestTime - now
+	return waitFor
 }
 
 func (h *HTTPHandler) write(conn *websocket.Conn) {

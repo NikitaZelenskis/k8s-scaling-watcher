@@ -5,11 +5,11 @@ import { Browser } from './browser.js';
 
 export class VPNManager {
   static configsFolder = '/vpn_configs/';
-  static passwordsFile = '/vpn/pass.txt';
   private ipLookupLink: string;
   private controllerLink = 'controller';
   private hostIp: string;
   private configFile: string;
+  private passwordFile: string = null;
   private openVPNProc: ChildProcess;
   private socket: WebSocket;
   private browser: Browser;
@@ -70,6 +70,7 @@ export class VPNManager {
       process.exit(1);
     } else {
       this.configFile = message.configFile;
+      this.passwordFile = VPNManager.configsFolder + message.passFile;
       this.startOpenVPN(message.configFile);
       if (await this.waitForIpChange()) {
         await this.browser.run();
@@ -121,15 +122,18 @@ export class VPNManager {
     const args = [
       '--route',
       '10.0.0.0',
-      '255.0.0.0',
+      '255.0.0.0', // these ip's are reserved by k8s
       'net_gateway', // ignore ips in that range
-      // these ip's are reserved by k8s
       '--config',
       VPNManager.configsFolder + configFile, // use configfile
-      '--auth-user-pass',
-      VPNManager.passwordsFile, // password for config
       '--daemon', // run in background otherwise it blocks
     ];
+
+    if (this.passwordFile !== null && this.passwordFile !== '') {
+      // password for config
+      args.push('--auth-user-pass');
+      args.push(this.passwordFile);
+    }
     console.log('Starting up openvpn');
     this.openVPNProc = spawn('openvpn', args);
   }

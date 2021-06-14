@@ -3,11 +3,11 @@ import { spawn } from 'child_process';
 import WebSocket from 'ws';
 export class VPNManager {
     static configsFolder = '/vpn_configs/';
-    static passwordsFile = '/vpn/pass.txt';
     ipLookupLink;
     controllerLink = 'controller';
     hostIp;
     configFile;
+    passwordFile = null;
     openVPNProc;
     socket;
     browser;
@@ -59,6 +59,7 @@ export class VPNManager {
         }
         else {
             this.configFile = message.configFile;
+            this.passwordFile = VPNManager.configsFolder + message.passFile;
             this.startOpenVPN(message.configFile);
             if (await this.waitForIpChange()) {
                 await this.browser.run();
@@ -106,13 +107,15 @@ export class VPNManager {
             '10.0.0.0',
             '255.0.0.0',
             'net_gateway',
-            // these ip's are reserved by k8s
             '--config',
             VPNManager.configsFolder + configFile,
-            '--auth-user-pass',
-            VPNManager.passwordsFile,
             '--daemon', // run in background otherwise it blocks
         ];
+        if (this.passwordFile !== null && this.passwordFile !== '') {
+            // password for config
+            args.push('--auth-user-pass');
+            args.push(this.passwordFile);
+        }
         console.log('Starting up openvpn');
         this.openVPNProc = spawn('openvpn', args);
     }
