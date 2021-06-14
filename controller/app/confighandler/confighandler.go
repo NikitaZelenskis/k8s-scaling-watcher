@@ -42,7 +42,6 @@ func (c *ConfigHandler) readConfigFile() {
 	}
 
 	for _, f := range configs {
-		//if last 5
 		if c.isOvpnFile(f) {
 			c.avalibleConfigs = append(c.avalibleConfigs, f.Name())
 		}

@@ -29,7 +29,7 @@ export class VPNManager {
     };
 
     this.socket.onopen = () => {
-      console.log('Successfully Connected to socket');
+      console.log('Successfully connected to socket');
       this.socket.send('getSettings');
     };
 
