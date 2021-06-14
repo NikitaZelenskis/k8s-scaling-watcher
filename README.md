@@ -28,7 +28,7 @@ If configs have passwords create a file inside **`vpn_configs`** with username a
 username
 password
 ```
-Then link config files to password inside **`vpn-settings.json`**. See [user documentation](../master/docs/USER_DOCS.md) for more detaild explanation.
+Then link config files to password inside **`vpn-settings.json`**. See [user documentation](../master/docs/USER_DOCS.md#vpn_configs-and-password-on-ovpn-file) for more detaild explanation.
 
 3. Change **linkToGo** and other settings in **`settings.json`**
 
