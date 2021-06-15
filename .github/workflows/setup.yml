@@ -1,7 +1,5 @@
-# This is a basic workflow to help you get started with Actions
-
-name: CI
-
+# if go build fails the image will return error
+name: Test setup.sh and go build
 # Controls when the action will run. 
 on:
   push:
