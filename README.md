@@ -32,7 +32,7 @@ Then link config files to password inside **`vpn-settings.json`**. See [user doc
 
 3. Change **linkToGo** and other settings in **`settings.json`**
 
-4. Change **`browser-script.js`** with script you want to run.\  
+4. Change **`browser-script.js`** with script you want to run.\
 Everything in browser-script.js will be executed when the browser page is loaded.
 
 ## Usage
