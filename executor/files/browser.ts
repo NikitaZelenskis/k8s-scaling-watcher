@@ -25,7 +25,7 @@ export class Browser {
     this.page = await this.browser.newPage();
     this.client = await this.page.target().createCDPSession();
     await this.setBandwidthLimit(this.maxDownloadSpeed, this.maxUploadSpeed);
-    await this.goToStream();
+    await this.goToLink();
     await this.runScript();
     console.log('watching');
     this.setReloadInterval();
@@ -76,7 +76,7 @@ export class Browser {
     });
   }
 
-  private async goToStream() {
+  private async goToLink() {
     console.log('Going to: ' + this.linkToGo);
     await this.page.goto(this.linkToGo, {
       waitUntil: 'networkidle2',
