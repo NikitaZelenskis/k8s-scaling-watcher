@@ -23,5 +23,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       
+      - name: Make setup executable
+        run: chmod +x ./setup.sh
       - name: Run setup script
         run: ./setup.sh
