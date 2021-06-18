@@ -11,6 +11,7 @@ import (
 	"time"
 
 	configHandler "../confighandler"
+	customWorker "../customworker"
 	"github.com/gorilla/websocket"
 )
 
@@ -32,6 +33,7 @@ type HTTPHandler struct {
 	kubernetesAPI        KubernetesAPI
 	settings             Settings
 	vpnSettings          VPNSettings
+	customWorkers        map[string]customWorker.CustomWorker
 }
 
 //NewHTTPHandler creates new instance of HTTPHandler
@@ -44,6 +46,7 @@ func NewHTTPHandler() HTTPHandler {
 	httphandler.upgrader = websocket.Upgrader{}
 	httphandler.clientIps = make(map[net.Addr]*websocket.Conn)
 	httphandler.kubernetesAPI = NewKubernetesAPI()
+	httphandler.customWorkers = customWorker.GetCustomWorkers()
 	return httphandler
 }
 
@@ -72,11 +75,12 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 		}
 		//give resoponse based on the message
 		var response string
-		switch string(message) {
-		case "getSettings":
+		if string(message) == "getSettings" {
 			response = h.getSettingsResoponse()
-		case "getConfig":
+		} else if string(message) == "getConfig"
 			response = h.getConfigResponse(conn)
+		} else if strings.HasPrefix(string(message), "CustomWorker"){
+			response = h.customWorkerMessage(string(message))
 		}
 
 		conn.SetWriteDeadline(time.Now().Add(writeWait))
@@ -85,6 +89,14 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 			return
 		}
 	}
+}
+
+func (h *HTTPHandler) customWorkerMessage(message: string): string{
+	split1 := strings.Split(message,":")[1]
+	split2 := strings.Split(split1, ",")
+	customWorkerName := split2[0]
+	customWorkerMessage := split2[1]
+	h.customWorkers[customWorkerName].onMessage(customWorkerMessage)
 }
 
 //close connection and delete it from map
@@ -128,13 +140,14 @@ func (h *HTTPHandler) findConfigPassFile(config string) string {
 
 func (h *HTTPHandler) getSettingsResoponse() string {
 	var tmp struct {
-		WaitFor          int64  `json:"waitFor"`
-		MaxPingTime      int    `json:"maxPingTime"`
-		PageReloadTime   int    `json:"pageReloadTime"`
-		LinkToGo         string `json:"linkToGo"`
-		MaxDownloadSpeed int    `json:"maxDownloadSpeed"`
-		MaxUploadSpeed   int    `json:"maxUploadSpeed"`
-		IpLookupLink     string `json:"ipLookupLink"`
+		WaitFor          int64    `json:"waitFor"`
+		MaxPingTime      int      `json:"maxPingTime"`
+		PageReloadTime   int      `json:"pageReloadTime"`
+		LinkToGo         string   `json:"linkToGo"`
+		MaxDownloadSpeed int      `json:"maxDownloadSpeed"`
+		MaxUploadSpeed   int      `json:"maxUploadSpeed"`
+		IpLookupLink     string   `json:"ipLookupLink"`
+		CustomWorkers    []string `json:"customWorkers"`
 	}
 	tmp.WaitFor = h.waitFor()
 	tmp.MaxPingTime = h.settings.MaxPingTime
@@ -143,6 +156,15 @@ func (h *HTTPHandler) getSettingsResoponse() string {
 	tmp.MaxDownloadSpeed = h.settings.MaxDownloadSpeed
 	tmp.MaxUploadSpeed = h.settings.MaxUploadSpeed
 	tmp.IpLookupLink = h.settings.IpLookupLink
+
+	//tell me about it
+	keys := make([]string, len(h.CustomWorkers))
+	i := 0
+	for k := range h.CustomWorkers {
+			keys[i] = k
+			i++
+	}
+	tmp.CustomWorkers = keys
 
 	byteArray, err := json.Marshal(&tmp)
 	if err != nil {

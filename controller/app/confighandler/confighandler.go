@@ -49,7 +49,8 @@ func (c *ConfigHandler) readConfigFile() {
 }
 
 //GetAvalibleConfig returns index of highest priority config file.
-//if none found returns random index
+//if no priorities found returns random index
+//if no configs left returns -1
 func (c *ConfigHandler) GetAvalibleConfig(clientIP string) string {
 	nextConfigIndex := c.getHighestPriorityConfigIndex()
 	if nextConfigIndex == -1 {

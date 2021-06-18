@@ -5,6 +5,8 @@ import puppeteer, {
 } from 'puppeteer';
 import * as os from 'os';
 import * as fs from 'fs';
+import { CustomWorker } from './custom-workers/custom-worker.js';
+import WebSocket from 'ws';
 
 export class Browser {
   static scriptLocation = '/script/browser-script.js';
@@ -17,16 +19,22 @@ export class Browser {
   private maxDownloadSpeed = 1048576;
   private maxUploadSpeed = 1048576;
 
+  private customWorkers: Map<string, CustomWorker>;
+
   public linkToGo: string;
   public pageReloadTime: number;
+
 
   public async run(): Promise<void> {
     this.browser = await this.createBrowser();
     this.page = await this.browser.newPage();
     this.client = await this.page.target().createCDPSession();
     await this.setBandwidthLimit(this.maxDownloadSpeed, this.maxUploadSpeed);
+    this.setPageForWorkers();
+    await this.customWorkersBeforeVisit();
     await this.goToLink();
     await this.runScript();
+    await this.customWorkersAfterVisit();
     console.log('watching');
     this.setReloadInterval();
   }
@@ -47,6 +55,38 @@ export class Browser {
       uploadThroughput: uploadSpeed,
       latency: 0,
     });
+  }
+
+  public async customWorkerMessage(customWorker: string, message: any){
+    this.customWorkers[customWorker].onMessage(message);
+  }
+
+  public async addCustomWorkers(customWorkers: string[], socket: WebSocket): Promise<void>{
+    for(let i = 0; i < customWorkers.length; i++){
+      this.customWorkers[customWorkers[i]] = await import('./custom-workers/'+customWorkers[i]+".js");
+      this.customWorkers[customWorkers[i]].setName(customWorkers[i]);
+      this.customWorkers[customWorkers[i]].setBrowser(this);
+      this.customWorkers[customWorkers[i]].setSocket(socket);
+    }
+  }
+
+  private setPageForWorkers(): void{
+    for (let [name, worker] of this.customWorkers) {
+      worker.setPage(this.page);
+      worker.setClient(this.client);
+    }
+  }
+
+  private async customWorkersBeforeVisit(): Promise<void>{
+    for (let [name, worker] of this.customWorkers) {
+      worker.beforeLinkVisit();
+    }
+  }
+
+  private async customWorkersAfterVisit(): Promise<void>{
+    for (let [name, worker] of this.customWorkers) {
+      worker.afterLinkVisit();
+    }
   }
 
   public async screenshot(): Promise<void> {
