@@ -28,7 +28,7 @@ If configs have passwords create a file inside **`vpn_configs`** with username a
 username
 password
 ```
-Then link config files to password inside **`vpn-settings.json`**. See [user documentation](../master/docs/USER_DOCS.md#vpn_configs-and-password-on-ovpn-file) for more detailed explanation.
+Then link config files to password inside **`vpn-settings.json`**. See [user documentation](/docs/USER_DOCS.md#vpn_configs-and-password-on-ovpn-file) for more detailed explanation.
 
 3. Change **linkToGo** and other settings in **`settings.json`**
 
@@ -54,5 +54,5 @@ kubectl delete -f deployment.yaml
 ```
 
 ## Project structure and other docs
-For contributing or making your own changes see [project structure](../master/dev/PROJECT_STRUCTURE.md).  
-For documentation see [user documentation](../master/docs/USER_DOCS.md).
+For contributing or making your own changes see [project structure](/dev/PROJECT_STRUCTURE.md).  
+For documentation see [user documentation](/docs/USER_DOCS.md).
