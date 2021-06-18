@@ -3,7 +3,6 @@ import { spawn, ChildProcess } from 'child_process';
 import WebSocket from 'ws';
 import { Browser } from './browser.js';
 
-
 export class VPNManager {
   static configsFolder = '/vpn_configs/';
   private ipLookupLink: string;
@@ -47,7 +46,7 @@ export class VPNManager {
     } else if (message.configFile !== undefined) {
       this.messageConfigFile(message);
     } else if (message.customWorker !== undefined) {
-      this.browser.customWorkerMessage(message.customWorker, message.message)
+      this.browser.customWorkerMessage(message.customWorker, message.message);
     }
   }
 

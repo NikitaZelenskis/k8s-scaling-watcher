@@ -24,7 +24,6 @@ export class Browser {
   public linkToGo: string;
   public pageReloadTime: number;
 
-
   public async run(): Promise<void> {
     this.browser = await this.createBrowser();
     this.page = await this.browser.newPage();
@@ -57,36 +56,44 @@ export class Browser {
     });
   }
 
-  public async customWorkerMessage(customWorker: string, message: any){
+  public async customWorkerMessage(
+    customWorker: string,
+    message
+  ): Promise<void> {
     this.customWorkers[customWorker].onMessage(message);
   }
 
-  public async addCustomWorkers(customWorkers: string[], socket: WebSocket): Promise<void>{
-    for(let i = 0; i < customWorkers.length; i++){
-      this.customWorkers[customWorkers[i]] = await import('./custom-workers/'+customWorkers[i]+".js");
+  public async addCustomWorkers(
+    customWorkers: string[],
+    socket: WebSocket
+  ): Promise<void> {
+    for (let i = 0; i < customWorkers.length; i++) {
+      this.customWorkers[customWorkers[i]] = await import(
+        './custom-workers/' + customWorkers[i] + '.js'
+      );
       this.customWorkers[customWorkers[i]].setName(customWorkers[i]);
       this.customWorkers[customWorkers[i]].setBrowser(this);
       this.customWorkers[customWorkers[i]].setSocket(socket);
     }
   }
 
-  private setPageForWorkers(): void{
-    for (let [name, worker] of this.customWorkers) {
+  private setPageForWorkers(): void {
+    this.customWorkers.forEach((worker) => {
       worker.setPage(this.page);
       worker.setClient(this.client);
-    }
+    });
   }
 
-  private async customWorkersBeforeVisit(): Promise<void>{
-    for (let [name, worker] of this.customWorkers) {
+  private async customWorkersBeforeVisit(): Promise<void> {
+    this.customWorkers.forEach((worker) => {
       worker.beforeLinkVisit();
-    }
+    });
   }
 
-  private async customWorkersAfterVisit(): Promise<void>{
-    for (let [name, worker] of this.customWorkers) {
+  private async customWorkersAfterVisit(): Promise<void> {
+    this.customWorkers.forEach((worker) => {
       worker.afterLinkVisit();
-    }
+    });
   }
 
   public async screenshot(): Promise<void> {
