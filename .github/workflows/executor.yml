@@ -12,7 +12,7 @@ on:
       - "**"
 
 jobs:
-  build:
+  install:
 
     runs-on: ubuntu-latest
 
@@ -30,9 +30,17 @@ jobs:
     - name: Npm install
       working-directory: ./executor/files
       run: npm install
+  lint:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
     - name: Test eslint rules
       working-directory: ./executor/files
       run: npm run lint
+  build:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
     - name: Test build
       working-directory: ./executor/files
       run: npm run build
