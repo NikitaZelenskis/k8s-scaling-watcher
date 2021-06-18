@@ -1,9 +1,9 @@
 # Documentation for users
-### **`template-deployment.yaml`** and **`deployment.yaml`**
-To change default file and folder locations there is a possibility to change them in `template-deployment.yaml` or `deployment.yaml` by changing path variable. 
+### [**`template-deployment.yaml`**](/template-deployment.yaml) and **`deployment.yaml`**
+To change default file and folder locations there is a possibility to change them in [`template-deployment.yaml`](/template-deployment.yaml) or `deployment.yaml` by changing path variable. 
 
-### **`setup.sh`**
-`setup.sh` has 3 arugments.  
+### [**`setup.sh`**](/setup.sh)
+[`setup.sh`](/setup.sh) has 3 arugments.  
 `-h` or `--help` to show usage of `setup.sh`.  
 `-b` or `--build` to build all docker images  
 `-d` or `--deplotment` to generate deployment file.  
@@ -55,7 +55,7 @@ Then `vpn-settings.json` should look like this:
 ```
 
 
-### **`settings.json`**
+### [**`settings.json`**](/settings.json)
 * `linkToGo` _Type: string_  
 Link that browsers will initially go to.
 * `vpnPriorities` _Type: string[]_  
