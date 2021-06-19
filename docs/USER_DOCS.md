@@ -112,7 +112,7 @@ Second register your custom worker by adding it to to [`/controller/app/customwo
 func GetCustomWorkers() map[string]CustomWorker {
 	var customWorkers map[string]CustomWorker = make(map[string]CustomWorker)
 	customWorkers["cookie-dispenser"] = &CookieDispatcher{}
-  customWorkers["example"] = &Example{}
+  	customWorkers["example"] = &Example{}
 
 	initCustomWorkers(customWorkers)
 	return customWorkers
