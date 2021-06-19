@@ -87,3 +87,62 @@ Link to service that will give your public ip address. Needs to return plain tex
 
 ### **`browser-script.js`**
 To execute js in browser when page is loaded you need to create `browser-script.js` in root folder by default.
+
+### **`custom workers`**
+When `browser-script.js` is not enough. A custom worker can be made. A custom worker has access to socket, page, client and browser. `cookie-dispensary` is an example of a custom worker (see [executor](/executor/files/custom-workers/cookie-dispenser.ts) and [controller](/controller/app/customworker/cookiedispenser.go)).\
+To create a custom worker first create a file inside [`/controller/app/customworker`](/controller/app/customworker) it should have fallowing format:
+``` go
+package customworker
+
+type Example struct {
+	CustomWorker
+}
+```
+Second register your custom worker by adding it to to [`/controller/app/customworker/customworker.go`](/controller/app/customworker/customworker.go) as follows:
+``` go
+func GetCustomWorkers() map[string]CustomWorker {
+	var customWorkers map[string]CustomWorker = make(map[string]CustomWorker)
+	customWorkers["cookie-dispenser"] = &CookieDispatcher{}
+  customWorkers["example"] = &Example{}
+
+	initCustomWorkers(customWorkers)
+	return customWorkers
+}
+```
+Name of custom worker is important as it needs to be same as `.ts` file in [`/executor/files/custom-workers`](/executor/files/custom-workers).
+`CustomWorker` interface has following methods that need to be implemented:
+* `init()` is run to initialize variables/state of `CustomWorker`. For example in [`/controller/app/customworker/cookiedispenser.go`](/controller/app/customworker/cookiedispenser.go) it is used to read all cookies.
+* `OnMessage(message string) string` is run when custom worker receives a message. Returns message to executor. For example in [`/controller/app/customworker/cookiedispenser.go`](/controller/app/customworker/cookiedispenser.go) it is used to give executor cookie file when it asks for it.
+
+Third you need to create `.ts` file inside [`/executor/files/custom-workers`](/executor/files/custom-workers) with same name as registered in [`/controller/app/customworker/customworker.go`](/controller/app/customworker/customworker.go).
+It should have following format:
+``` ts
+import { CustomWorker } from './custom-worker.js';
+
+export default class Example extends CustomWorker {
+
+}
+```
+`CustomWorker` has following methods and attributes:
+* `browser` _Type: [puppeteer.Browser](https://github.com/puppeteer/puppeteer/blob/v10.0.0/docs/api.md#class-browser)_
+Browser instance of chrome
+* `page` _Type: [puppeteer.Page](https://github.com/puppeteer/puppeteer/blob/v10.0.0/docs/api.md#class-page)_
+Page instance inside browser.
+* `client` _Type: [puppeteer.CDPSession](https://github.com/puppeteer/puppeteer/blob/v10.0.0/docs/api.md#class-cdpsession)_
+Client that talks to Chrome Devtools Protocol.
+* `sendMessage(message)` 
+  - `message` _Type: string_
+  Message to send to controller
+  - returns _Type: void_
+* `beforeLinkVisit()`
+Will be executed before the link is visited.
+  - returns _Type: Promise<void>_
+* `afterLinkVisit()`
+Will be executed after the link is visited.
+  - returns _Type: Promise<void>_
+* `onMessage(message)`
+  - `message` _Type: Object_
+  Message that is received from controller.
+  - returns _Type: Promise<void>_
+
+For example see: [`/executor/files/custom-workers/cookie-dispenser.ts`](/executor/files/custom-workers/cookie-dispenser.ts)

@@ -1,5 +1,4 @@
-import { Browser } from '../browser.js';
-import puppeteer, { Page } from 'puppeteer';
+import puppeteer, { Page, Browser } from 'puppeteer';
 export interface CustomWorker {
   beforeLinkVisit?(): Promise<void>;
   afterLinkVisit?(): Promise<void>;

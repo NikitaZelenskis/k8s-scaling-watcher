@@ -97,7 +97,20 @@ func (h *HTTPHandler) customWorkerMessage(message string) string {
 	split2 := strings.Split(split1, ",")
 	customWorkerName := split2[0]
 	customWorkerMessage := split2[1]
-	return h.customWorkers[customWorkerName].OnMessage(customWorkerMessage)
+
+	var tmp struct {
+		CustomWorker string `json:"customWorker"`
+		Message      string `json:"message"`
+	}
+	tmp.CustomWorker = customWorkerName
+	tmp.Message = h.customWorkers[customWorkerName].OnMessage(customWorkerMessage)
+	byteArray, err := json.Marshal(&tmp)
+	if err != nil {
+		log.Println(err)
+		return "{\"error\" : \"can't parse vpn settings\"}"
+	}
+
+	return string(byteArray)
 }
 
 //close connection and delete it from map

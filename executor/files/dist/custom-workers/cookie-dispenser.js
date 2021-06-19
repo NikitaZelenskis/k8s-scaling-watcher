@@ -18,15 +18,15 @@ export default class CookieDispenser extends CustomWorker {
     }
     async onMessage(message) {
         this.cookieFile = message.cookieFile;
-        if (this.cookieFile == "") {
+        if (this.cookieFile === '') {
             this.cookieSet = true;
-            console.log("Out of cookies");
+            console.log('Out of cookies');
             return;
         }
         const cookies = fs.readFileSync(this.cookieFile, 'utf8');
         const deserializedCookies = JSON.parse(cookies);
         await this.page.setCookie(...deserializedCookies);
-        console.log("Cookie set to: " + this.cookieFile);
+        console.log('Cookie set to: ' + this.cookieFile);
         this.cookieSet = true;
     }
 }

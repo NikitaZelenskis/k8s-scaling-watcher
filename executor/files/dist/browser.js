@@ -47,12 +47,12 @@ export class Browser {
     async addCustomWorkers(customWorkers, socket) {
         for (let i = 0; i < customWorkers.length; i++) {
             try {
-                let customWorker = await import(Browser.customWokersLocation + customWorkers[i] + '.js');
+                const customWorker = await import(Browser.customWokersLocation + customWorkers[i] + '.js');
                 this.customWorkers[customWorkers[i]] = new customWorker.default();
             }
-            catch (err) {
-                console.log(err);
-                console.log("Could not load " + customWorkers[i]);
+            catch (error) {
+                console.log(error);
+                console.log('Could not load ' + customWorkers[i]);
                 process.exit(1);
             }
             this.customWorkers[customWorkers[i]].setName(customWorkers[i]);

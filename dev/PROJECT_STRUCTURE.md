@@ -13,7 +13,7 @@ Kubernetes does not have relative paths thus there exists `setup.sh` that genera
 
 ### **`executor`**
 Inside executor folder there is Dockerfile which creates container with puppeteer and openvpn.  
-`executor/files` contains all files that are used to create executor container. All code in `executor/files` is in typescript(TS) and is compiled into folder `executor/files/dist`. Currently all TS code needs to be compiled seperatly from docker image.
+`executor/files` contains all files that are used to create executor container. All code in `executor/files` is in typescript(TS) and is compiled into folder `executor/files/dist`.
 
 ### **`controller`**
 Controller is made from standard go image. Then application is build and run.
@@ -23,3 +23,9 @@ Controller application is a webserver used to communicate between executor conta
 `controller/app/confighandler` keeps track which executor container uses which vpn configuration.
 ### **`settings.json`** stores all initial settings for controller and executor. 
 
+### **`custom-workers`** 
+If user wants to run a custom script accessing socket, page, client and/or browser. This could be done via custom worker.
+`custom-workers` contains all files that will be accesible to custom-workers.
+[`controller/app/customworker`](/controller/app/customworker) conatins all controllers custom workers.
+[`executor/files/custom-workers`](/executor/files/custom-workers) contains all controllers custom workers.
+For more details see [user documentation](/docs/USER_DOCS.md#custom-workers)
