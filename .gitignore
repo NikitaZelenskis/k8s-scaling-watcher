@@ -8,3 +8,4 @@ deployment.yaml
 browser-script.js
 pass.txt
 vpn-settings.json
+custom-workers/cookie-dispensary/*

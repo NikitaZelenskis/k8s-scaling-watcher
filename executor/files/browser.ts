@@ -9,7 +9,8 @@ import { CustomWorker } from './custom-workers/custom-worker.js';
 import WebSocket from 'ws';
 
 export class Browser {
-  static scriptLocation = '/script/browser-script.js';
+  static scriptLocation: string= '/script/browser-script.js';
+  static customWokersLocation: string = './custom-workers/';
   private page: Page;
   private browser: puppeteerBrowser;
   private viewPort: Viewport = { width: 500, height: 500 };
@@ -19,7 +20,7 @@ export class Browser {
   private maxDownloadSpeed = 1048576;
   private maxUploadSpeed = 1048576;
 
-  private customWorkers: Map<string, CustomWorker>;
+  private customWorkers: Map<string, CustomWorker> = new  Map<string, CustomWorker>();
 
   public linkToGo: string;
   public pageReloadTime: number;
@@ -68,9 +69,16 @@ export class Browser {
     socket: WebSocket
   ): Promise<void> {
     for (let i = 0; i < customWorkers.length; i++) {
-      this.customWorkers[customWorkers[i]] = await import(
-        './custom-workers/' + customWorkers[i] + '.js'
-      );
+      try{
+        let customWorker  = await import(
+          Browser.customWokersLocation + customWorkers[i] + '.js'
+        );
+        this.customWorkers[customWorkers[i]] = new customWorker.default();
+      }catch(err){
+        console.log(err);
+        console.log("Could not load "+ customWorkers[i]);
+        process.exit(1);
+      }
       this.customWorkers[customWorkers[i]].setName(customWorkers[i]);
       this.customWorkers[customWorkers[i]].setBrowser(this);
       this.customWorkers[customWorkers[i]].setSocket(socket);

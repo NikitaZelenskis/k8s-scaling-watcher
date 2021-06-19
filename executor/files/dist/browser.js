@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as fs from 'fs';
 export class Browser {
     static scriptLocation = '/script/browser-script.js';
+    static customWokersLocation = './custom-workers/';
     page;
     browser;
     viewPort = { width: 500, height: 500 };
@@ -10,6 +11,7 @@ export class Browser {
     client = null;
     maxDownloadSpeed = 1048576;
     maxUploadSpeed = 1048576;
+    customWorkers = new Map();
     linkToGo;
     pageReloadTime;
     async run() {
@@ -17,8 +19,11 @@ export class Browser {
         this.page = await this.browser.newPage();
         this.client = await this.page.target().createCDPSession();
         await this.setBandwidthLimit(this.maxDownloadSpeed, this.maxUploadSpeed);
-        await this.goToStream();
+        this.setPageForWorkers();
+        await this.customWorkersBeforeVisit();
+        await this.goToLink();
         await this.runScript();
+        await this.customWorkersAfterVisit();
         console.log('watching');
         this.setReloadInterval();
     }
@@ -34,6 +39,41 @@ export class Browser {
             downloadThroughput: downloadSpeed,
             uploadThroughput: uploadSpeed,
             latency: 0,
+        });
+    }
+    async customWorkerMessage(customWorker, message) {
+        this.customWorkers[customWorker].onMessage(message);
+    }
+    async addCustomWorkers(customWorkers, socket) {
+        for (let i = 0; i < customWorkers.length; i++) {
+            try {
+                let customWorker = await import(Browser.customWokersLocation + customWorkers[i] + '.js');
+                this.customWorkers[customWorkers[i]] = new customWorker.default();
+            }
+            catch (err) {
+                console.log(err);
+                console.log("Could not load " + customWorkers[i]);
+                process.exit(1);
+            }
+            this.customWorkers[customWorkers[i]].setName(customWorkers[i]);
+            this.customWorkers[customWorkers[i]].setBrowser(this);
+            this.customWorkers[customWorkers[i]].setSocket(socket);
+        }
+    }
+    setPageForWorkers() {
+        this.customWorkers.forEach((worker) => {
+            worker.setPage(this.page);
+            worker.setClient(this.client);
+        });
+    }
+    async customWorkersBeforeVisit() {
+        this.customWorkers.forEach((worker) => {
+            worker.beforeLinkVisit();
+        });
+    }
+    async customWorkersAfterVisit() {
+        this.customWorkers.forEach((worker) => {
+            worker.afterLinkVisit();
         });
     }
     async screenshot() {
@@ -60,7 +100,7 @@ export class Browser {
             executablePath: 'google-chrome-unstable',
         });
     }
-    async goToStream() {
+    async goToLink() {
         console.log('Going to: ' + this.linkToGo);
         await this.page.goto(this.linkToGo, {
             waitUntil: 'networkidle2',

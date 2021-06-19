@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	configHandler "../confighandler"
@@ -77,9 +78,9 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 		var response string
 		if string(message) == "getSettings" {
 			response = h.getSettingsResoponse()
-		} else if string(message) == "getConfig"
+		} else if string(message) == "getConfig" {
 			response = h.getConfigResponse(conn)
-		} else if strings.HasPrefix(string(message), "CustomWorker"){
+		} else if strings.HasPrefix(string(message), "CustomWorker") {
 			response = h.customWorkerMessage(string(message))
 		}
 
@@ -91,12 +92,12 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 	}
 }
 
-func (h *HTTPHandler) customWorkerMessage(message: string): string{
-	split1 := strings.Split(message,":")[1]
+func (h *HTTPHandler) customWorkerMessage(message string) string {
+	split1 := strings.Split(message, ":")[1]
 	split2 := strings.Split(split1, ",")
 	customWorkerName := split2[0]
 	customWorkerMessage := split2[1]
-	h.customWorkers[customWorkerName].onMessage(customWorkerMessage)
+	return h.customWorkers[customWorkerName].OnMessage(customWorkerMessage)
 }
 
 //close connection and delete it from map
@@ -158,11 +159,11 @@ func (h *HTTPHandler) getSettingsResoponse() string {
 	tmp.IpLookupLink = h.settings.IpLookupLink
 
 	//tell me about it
-	keys := make([]string, len(h.CustomWorkers))
+	keys := make([]string, len(h.customWorkers))
 	i := 0
-	for k := range h.CustomWorkers {
-			keys[i] = k
-			i++
+	for k := range h.customWorkers {
+		keys[i] = k
+		i++
 	}
 	tmp.CustomWorkers = keys
 
