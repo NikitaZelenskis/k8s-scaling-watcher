@@ -23,7 +23,7 @@ export class VPNManager {
             process.exit(1);
         };
         this.socket.onopen = () => {
-            console.log('Successfully Connected to socket');
+            console.log('Successfully connected to socket');
             this.socket.send('getSettings');
         };
         this.socket.onmessage = async (msg) => {
@@ -39,6 +39,9 @@ export class VPNManager {
         else if (message.configFile !== undefined) {
             this.messageConfigFile(message);
         }
+        else if (message.customWorker !== undefined) {
+            this.browser.customWorkerMessage(message.customWorker, message.message);
+        }
     }
     async messageSettings(message) {
         const sleepTime = message.waitFor * 1000;
@@ -48,6 +51,7 @@ export class VPNManager {
         await this.browser.setBandwidthLimit(message.maxDownloadSpeed, message.maxUploadSpeed);
         this.ipLookupLink = message.ipLookupLink;
         this.hostIp = await this.lookupIp();
+        await this.browser.addCustomWorkers(message.customWorkers, this.socket);
         console.log('Sleeping for: ' + message.waitFor);
         await this.sleep(sleepTime);
         this.socket.send('getConfig');

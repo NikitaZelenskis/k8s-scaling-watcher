@@ -45,6 +45,8 @@ export class VPNManager {
       this.messageSettings(message);
     } else if (message.configFile !== undefined) {
       this.messageConfigFile(message);
+    } else if (message.customWorker !== undefined) {
+      this.browser.customWorkerMessage(message.customWorker, message.message);
     }
   }
 
@@ -59,6 +61,7 @@ export class VPNManager {
     );
     this.ipLookupLink = message.ipLookupLink;
     this.hostIp = await this.lookupIp();
+    await this.browser.addCustomWorkers(message.customWorkers, this.socket);
     console.log('Sleeping for: ' + message.waitFor);
     await this.sleep(sleepTime);
     this.socket.send('getConfig');

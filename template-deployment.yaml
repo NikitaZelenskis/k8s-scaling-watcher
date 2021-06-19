@@ -34,6 +34,10 @@ spec:
         hostPath:
           path: {{PATH-TO-CHANGE}}/vpn-settings.json
           type: File
+      - name: custom-workers
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/custom-workers
+          type: Directory
 
       containers:
       - name: controller
@@ -51,6 +55,8 @@ spec:
             name: settings-fle
           - mountPath: /go/app/vpn-settings.json
             name: vpn-passwords
+          - mountPath: /custom-workers
+            name: custom-workers
 ---
 #controller-service
 apiVersion: v1
@@ -115,13 +121,17 @@ spec:
         hostPath:
           path: {{PATH-TO-CHANGE}}/browser-script.js
           type: File
+      - name: custom-workers
+        hostPath:
+          path: {{PATH-TO-CHANGE}}/custom-workers
+          type: Directory
 
       containers:
       - name: executor
         image: openvpnclient
         imagePullPolicy: Never
         command: ["/bin/sh", "-c"]
-        args: ["node /vpn/dist/main.js"]
+        args: ["npm run build && node /vpn/dist/main.js"]
         securityContext:
           capabilities:
             add: ["NET_ADMIN"] 
@@ -134,6 +144,8 @@ spec:
             name: vpn-configs
           - mountPath: /script/browser-script.js
             name: browser-script
+          - mountPath: /custom-workers
+            name: custom-workers
 
         resources:
           limits:

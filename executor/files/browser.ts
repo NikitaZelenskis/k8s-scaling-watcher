@@ -5,9 +5,12 @@ import puppeteer, {
 } from 'puppeteer';
 import * as os from 'os';
 import * as fs from 'fs';
+import { CustomWorker } from './custom-workers/custom-worker.js';
+import WebSocket from 'ws';
 
 export class Browser {
   static scriptLocation = '/script/browser-script.js';
+  static customWokersLocation = './custom-workers/';
   private page: Page;
   private browser: puppeteerBrowser;
   private viewPort: Viewport = { width: 500, height: 500 };
@@ -17,6 +20,11 @@ export class Browser {
   private maxDownloadSpeed = 1048576;
   private maxUploadSpeed = 1048576;
 
+  private customWorkers: Map<string, CustomWorker> = new Map<
+    string,
+    CustomWorker
+  >();
+
   public linkToGo: string;
   public pageReloadTime: number;
 
@@ -25,8 +33,11 @@ export class Browser {
     this.page = await this.browser.newPage();
     this.client = await this.page.target().createCDPSession();
     await this.setBandwidthLimit(this.maxDownloadSpeed, this.maxUploadSpeed);
+    this.setPageForWorkers();
+    await this.customWorkersBeforeVisit();
     await this.goToLink();
     await this.runScript();
+    await this.customWorkersAfterVisit();
     console.log('watching');
     this.setReloadInterval();
   }
@@ -47,6 +58,59 @@ export class Browser {
       uploadThroughput: uploadSpeed,
       latency: 0,
     });
+  }
+
+  public async customWorkerMessage(
+    customWorker: string,
+    message
+  ): Promise<void> {
+    if (this.customWorkers.get(customWorker) !== undefined) {
+      await this.customWorkers.get(customWorker).onMessage(message);
+    }
+  }
+
+  public async addCustomWorkers(
+    customWorkers: string[],
+    socket: WebSocket
+  ): Promise<void> {
+    for (let i = 0; i < customWorkers.length; i++) {
+      try {
+        const customWorker = await import(
+          Browser.customWokersLocation + customWorkers[i] + '.js'
+        );
+        this.customWorkers.set(customWorkers[i], new customWorker.default());
+      } catch (error) {
+        console.log(error);
+        console.log('Could not load ' + customWorkers[i]);
+        process.exit(1);
+      }
+      this.customWorkers.get(customWorkers[i]).setName(customWorkers[i]);
+      this.customWorkers.get(customWorkers[i]).setBrowser(this.browser);
+      this.customWorkers.get(customWorkers[i]).setSocket(socket);
+    }
+  }
+
+  private setPageForWorkers(): void {
+    for (const worker of this.customWorkers.values()) {
+      worker.setPage(this.page);
+      worker.setClient(this.client);
+    }
+  }
+
+  private async customWorkersBeforeVisit(): Promise<void> {
+    for (const worker of this.customWorkers.values()) {
+      if (worker.beforeLinkVisit !== undefined) {
+        await worker.beforeLinkVisit();
+      }
+    }
+  }
+
+  private async customWorkersAfterVisit(): Promise<void> {
+    for (const worker of this.customWorkers.values()) {
+      if (worker.afterLinkVisit !== undefined) {
+        await worker.afterLinkVisit();
+      }
+    }
   }
 
   public async screenshot(): Promise<void> {
