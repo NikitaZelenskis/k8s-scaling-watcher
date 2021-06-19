@@ -82,7 +82,7 @@ func (c *ConfigHandler) getHighestPriorityConfigIndex() int {
 	//if no matches just return random available
 	if len(c.avalibleConfigs) > 0 {
 		rand.Seed(time.Now().Unix())
-		return rand.Int() % (len(c.avalibleConfigs) - 1)
+		return rand.Intn(len(c.avalibleConfigs))
 	}
 	return -1
 }

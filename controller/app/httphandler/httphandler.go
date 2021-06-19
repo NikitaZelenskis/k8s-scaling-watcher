@@ -81,7 +81,7 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 		} else if string(message) == "getConfig" {
 			response = h.getConfigResponse(conn)
 		} else if strings.HasPrefix(string(message), "CustomWorker") {
-			response = h.customWorkerMessage(string(message))
+			response = h.customWorkerMessage(string(message), conn)
 		}
 
 		conn.SetWriteDeadline(time.Now().Add(writeWait))
@@ -92,7 +92,7 @@ func (h *HTTPHandler) reader(conn *websocket.Conn) {
 	}
 }
 
-func (h *HTTPHandler) customWorkerMessage(message string) string {
+func (h *HTTPHandler) customWorkerMessage(message string, conn *websocket.Conn) string {
 	split1 := strings.Split(message, ":")[1]
 	split2 := strings.Split(split1, ",")
 	customWorkerName := split2[0]
@@ -103,7 +103,11 @@ func (h *HTTPHandler) customWorkerMessage(message string) string {
 		Message      string `json:"message"`
 	}
 	tmp.CustomWorker = customWorkerName
-	tmp.Message = h.customWorkers[customWorkerName].OnMessage(customWorkerMessage)
+	if h.customWorkers[customWorkerName].OnMessage == nil {
+		tmp.Message = ""
+	} else {
+		tmp.Message = h.customWorkers[customWorkerName].OnMessage(customWorkerMessage, conn.RemoteAddr().String())
+	}
 	byteArray, err := json.Marshal(&tmp)
 	if err != nil {
 		log.Println(err)
@@ -117,6 +121,9 @@ func (h *HTTPHandler) customWorkerMessage(message string) string {
 func (h *HTTPHandler) closeConnection(conn *websocket.Conn) {
 	h.configHandler.ResetConfig(conn.RemoteAddr().String())
 	delete(h.clientIps, conn.RemoteAddr())
+	for _, v := range h.customWorkers {
+		v.OnConnectionClose(conn.RemoteAddr().String())
+	}
 	conn.Close()
 	log.Println("Connection with " + conn.RemoteAddr().String() + " is closed")
 }

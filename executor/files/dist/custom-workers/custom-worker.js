@@ -1,4 +1,5 @@
 export class CustomWorker {
+    static customWorkersFoler = '/custom-workers/';
     name;
     browser;
     page;

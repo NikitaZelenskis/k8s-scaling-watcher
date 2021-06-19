@@ -42,39 +42,45 @@ export class Browser {
         });
     }
     async customWorkerMessage(customWorker, message) {
-        this.customWorkers[customWorker].onMessage(message);
+        if (this.customWorkers.get(customWorker) !== undefined) {
+            await this.customWorkers.get(customWorker).onMessage(message);
+        }
     }
     async addCustomWorkers(customWorkers, socket) {
         for (let i = 0; i < customWorkers.length; i++) {
             try {
                 const customWorker = await import(Browser.customWokersLocation + customWorkers[i] + '.js');
-                this.customWorkers[customWorkers[i]] = new customWorker.default();
+                this.customWorkers.set(customWorkers[i], new customWorker.default());
             }
             catch (error) {
                 console.log(error);
                 console.log('Could not load ' + customWorkers[i]);
                 process.exit(1);
             }
-            this.customWorkers[customWorkers[i]].setName(customWorkers[i]);
-            this.customWorkers[customWorkers[i]].setBrowser(this);
-            this.customWorkers[customWorkers[i]].setSocket(socket);
+            this.customWorkers.get(customWorkers[i]).setName(customWorkers[i]);
+            this.customWorkers.get(customWorkers[i]).setBrowser(this.browser);
+            this.customWorkers.get(customWorkers[i]).setSocket(socket);
         }
     }
     setPageForWorkers() {
-        this.customWorkers.forEach((worker) => {
+        for (const worker of this.customWorkers.values()) {
             worker.setPage(this.page);
             worker.setClient(this.client);
-        });
+        }
     }
     async customWorkersBeforeVisit() {
-        this.customWorkers.forEach((worker) => {
-            worker.beforeLinkVisit();
-        });
+        for (const worker of this.customWorkers.values()) {
+            if (worker.beforeLinkVisit !== undefined) {
+                await worker.beforeLinkVisit();
+            }
+        }
     }
     async customWorkersAfterVisit() {
-        this.customWorkers.forEach((worker) => {
-            worker.afterLinkVisit();
-        });
+        for (const worker of this.customWorkers.values()) {
+            if (worker.afterLinkVisit !== undefined) {
+                await worker.afterLinkVisit();
+            }
+        }
     }
     async screenshot() {
         await this.page.screenshot();

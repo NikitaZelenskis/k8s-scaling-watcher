@@ -97,6 +97,15 @@ package customworker
 type Example struct {
 	CustomWorker
 }
+
+func (c *Example) init() {
+}
+
+func (c *Example) OnMessage(message string, ip string) string {
+}
+
+func (c *Example) OnConnectionClose(ip string) {
+}
 ```
 Second register your custom worker by adding it to to [`/controller/app/customworker/customworker.go`](/controller/app/customworker/customworker.go) as follows:
 ``` go
@@ -112,7 +121,10 @@ func GetCustomWorkers() map[string]CustomWorker {
 Name of custom worker is important as it needs to be same as `.ts` file in [`/executor/files/custom-workers`](/executor/files/custom-workers).
 `CustomWorker` interface has following methods that need to be implemented:
 * `init()` is run to initialize variables/state of `CustomWorker`. For example in [`/controller/app/customworker/cookiedispenser.go`](/controller/app/customworker/cookiedispenser.go) it is used to read all cookies.
-* `OnMessage(message string) string` is run when custom worker receives a message. Returns message to executor. For example in [`/controller/app/customworker/cookiedispenser.go`](/controller/app/customworker/cookiedispenser.go) it is used to give executor cookie file when it asks for it.
+* `OnMessage(message string, ip string) string` is run when custom worker receives a message. For example in [`/controller/app/customworker/cookiedispenser.go`](/controller/app/customworker/cookiedispenser.go) it is used to give executor cookie file when it asks for it.
+  - `message`: message received from executer
+  - `ip`: ip of executer of the message
+  - Returns: message to executor. 
 
 Third you need to create `.ts` file inside [`/executor/files/custom-workers`](/executor/files/custom-workers) with same name as registered in [`/controller/app/customworker/customworker.go`](/controller/app/customworker/customworker.go).
 It should have following format:
@@ -124,25 +136,28 @@ export default class Example extends CustomWorker {
 }
 ```
 `CustomWorker` has following methods and attributes:
-* `browser` _Type: [puppeteer.Browser](https://github.com/puppeteer/puppeteer/blob/v10.0.0/docs/api.md#class-browser)_
+* `browser` _Type: [puppeteer.Browser](https://github.com/puppeteer/puppeteer/blob/v10.0.0/docs/api.md#class-browser)_ \
 Browser instance of chrome
-* `page` _Type: [puppeteer.Page](https://github.com/puppeteer/puppeteer/blob/v10.0.0/docs/api.md#class-page)_
+* `page` _Type: [puppeteer.Page](https://github.com/puppeteer/puppeteer/blob/v10.0.0/docs/api.md#class-page)_ \
 Page instance inside browser.
-* `client` _Type: [puppeteer.CDPSession](https://github.com/puppeteer/puppeteer/blob/v10.0.0/docs/api.md#class-cdpsession)_
+* `client` _Type: [puppeteer.CDPSession](https://github.com/puppeteer/puppeteer/blob/v10.0.0/docs/api.md#class-cdpsession)_ \
 Client that talks to Chrome Devtools Protocol.
+* static `customWorkersFoler` _Type: string_ \
+  Path to custom-workers folder
 * `sendMessage(message)` 
-  - `message` _Type: string_
+  - `message` _Type: string_ \
   Message to send to controller
-  - returns _Type: void_
-* `beforeLinkVisit()`
+  - returns: _Type: void_
+* `beforeLinkVisit()` _Optional_\
 Will be executed before the link is visited.
-  - returns _Type: Promise<void>_
-* `afterLinkVisit()`
+  - returns: _Type: Promise\<void>_
+* `afterLinkVisit()` _Optional_\
 Will be executed after the link is visited.
-  - returns _Type: Promise<void>_
-* `onMessage(message)`
-  - `message` _Type: Object_
+  - returns: _Type: Promise\<void>_
+* `onMessage(message)` _Optional_\
+Will be executed when there is a message from controller.
+  - `message` _Type: Object_ \
   Message that is received from controller.
-  - returns _Type: Promise<void>_
+  - returns: _Type: Promise\<void>_
 
 For example see: [`/executor/files/custom-workers/cookie-dispenser.ts`](/executor/files/custom-workers/cookie-dispenser.ts)

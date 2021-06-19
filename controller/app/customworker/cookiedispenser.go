@@ -27,14 +27,18 @@ func (c *CookieDispatcher) init() {
 	}
 }
 
-func (c *CookieDispatcher) OnMessage(message string) string {
+func (c *CookieDispatcher) OnMessage(message string, ip string) string {
 	if len(c.cookies) > 0 {
 		rand.Seed(time.Now().Unix())
-		randIndex := rand.Int() % (len(c.cookies) - 1)
+		randIndex := rand.Intn(len(c.cookies))
 		cookie := c.cookies[randIndex]
 		//remove from c.cookies
 		c.cookies = append(c.cookies[:randIndex], c.cookies[randIndex+1:]...)
 		return cookie
 	}
 	return ""
+}
+
+func (c *CookieDispatcher) OnConnectionClose(ip string) {
+	return
 }

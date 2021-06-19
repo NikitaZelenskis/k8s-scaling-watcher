@@ -1,4 +1,5 @@
 import puppeteer, { Page, Browser } from 'puppeteer';
+import WebSocket from 'ws';
 export interface CustomWorker {
   beforeLinkVisit?(): Promise<void>;
   afterLinkVisit?(): Promise<void>;
@@ -6,6 +7,7 @@ export interface CustomWorker {
 }
 
 export class CustomWorker {
+  static customWorkersFoler = '/custom-workers/';
   protected name: string;
   protected browser: Browser;
   protected page: Page;

@@ -6,7 +6,8 @@ const (
 
 type CustomWorker interface {
 	init()
-	OnMessage(message string) string
+	OnMessage(message string, ip string) string
+	OnConnectionClose(ip string)
 }
 
 func GetCustomWorkers() map[string]CustomWorker {
