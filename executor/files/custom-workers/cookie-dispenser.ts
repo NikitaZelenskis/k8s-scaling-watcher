@@ -3,7 +3,7 @@ import * as fs from 'fs';
 
 export default class CookieDispenser extends CustomWorker {
   private cookieFile: string;
-  private cookieSet: boolean = false;
+  private cookieSet = false;
 
   public async beforeLinkVisit(): Promise<void> {
     this.sendMessage('getCookie');
@@ -22,16 +22,16 @@ export default class CookieDispenser extends CustomWorker {
 
   public async onMessage(message): Promise<void> {
     this.cookieFile = message.cookieFile;
-    if(this.cookieFile == ""){
+    if (this.cookieFile === '') {
       this.cookieSet = true;
-      console.log("Out of cookies");
+      console.log('Out of cookies');
       return;
     }
     const cookies = fs.readFileSync(this.cookieFile, 'utf8');
 
     const deserializedCookies = JSON.parse(cookies);
     await this.page.setCookie(...deserializedCookies);
-    console.log("Cookie set to: "+this.cookieFile);
+    console.log('Cookie set to: ' + this.cookieFile);
     this.cookieSet = true;
   }
 }

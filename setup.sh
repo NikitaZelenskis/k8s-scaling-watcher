@@ -42,6 +42,7 @@ function check_docker (){
 
 function create_empty_files (){
   mkdir vpn_configs > /dev/null 2>&1
+  mkdir custom-workers/cookie-dispensary > /dev/null 2>&1
   touch browser-script.js
   if [[ !  (-f vpn-settings.json) ]];then
     touch vpn-settings.json
