@@ -18,6 +18,7 @@ Please use this tool only as last resort if everything else fails
 ## Setup
 1. Run setup.sh.
 ```bash
+chmod +x setup.sh
 ./setup.sh
 ```
 This wil generate 2 docker images and deployment file for kubernetes.
