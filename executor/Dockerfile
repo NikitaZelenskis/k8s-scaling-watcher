@@ -23,6 +23,7 @@ RUN apt-get update \
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
 WORKDIR /vpn
+COPY files /vpn
 
 # Install puppeteer so it's available in the container.
 RUN npm i puppeteer \
@@ -32,10 +33,9 @@ RUN npm i puppeteer \
     && mkdir -p /home/openvpnclient/Downloads \
     && chown -R openvpnclient:openvpnclient /home/openvpnclient \
     && chown -R openvpnclient:openvpnclient /vpn/node_modules \
-    && npm i axios && npm i ws 
-
+    && npm install --production && npx tsc -p tsconfig.json
 
 # Run everything after as non-privileged user.
-# USER pptruser
+USER openvpnclient
 
 # CMD ["google-chrome-unstable"]

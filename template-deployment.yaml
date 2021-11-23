@@ -105,10 +105,6 @@ spec:
           - cluster.local
         
       volumes:
-      - name: executor
-        hostPath:
-          path: {{PATH-TO-CHANGE}}/executor/files
-          type: Directory
       - name: tun
         hostPath:
           path: /dev/net/tun
@@ -131,13 +127,11 @@ spec:
         image: openvpnclient
         imagePullPolicy: Never
         command: ["/bin/sh", "-c"]
-        args: ["npm run build && node /vpn/dist/main.js"]
+        args: ["node /vpn/dist/main.js"]
         securityContext:
           capabilities:
             add: ["NET_ADMIN"] 
         volumeMounts:
-          - mountPath: /vpn
-            name: executor
           - mountPath: /dev/net/tun
             name: tun
           - mountPath: /vpn_configs
