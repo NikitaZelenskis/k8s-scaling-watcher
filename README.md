@@ -15,6 +15,9 @@ Please use this tool only as last resort if everything else fails
  * Make sure WSL 2 is installed and enabled. More info [here](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
  * Install [Docker](https://docs.docker.com/docker-for-windows/install/). Easiest option is to install [Docker Desktop for Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows/)
 
+### Networking
+**`template-deployment.yaml `** and **`deployment.yaml `** are configured to use flannel. If you want to use something else you'll need to reconfigure dns settings inside the deployment.
+
 ## Setup
 1. Run setup.sh.
 ```bash
