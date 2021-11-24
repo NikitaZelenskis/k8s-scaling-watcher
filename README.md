@@ -16,7 +16,7 @@ Please use this tool only as last resort if everything else fails
  * Install [Docker](https://docs.docker.com/docker-for-windows/install/). Easiest option is to install [Docker Desktop for Windows](https://hub.docker.com/editions/community/docker-ce-desktop-windows/)
 
 ### Networking
-**`template-deployment.yaml `** and **`deployment.yaml `** are configured to use flannel. If you want to use something else you'll need to reconfigure dns settings inside the deployment.
+**`template-deployment.yaml`** and **`deployment.yaml`** are configured to use flannel. If you want to use something else you'll need to reconfigure dns settings inside the deployment.
 
 ## Setup
 1. Run setup.sh.
