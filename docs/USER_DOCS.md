@@ -1,8 +1,10 @@
 # Documentation for users
 ### [**`template-deployment.yaml`**](/template-deployment.yaml) and **`deployment.yaml`**
+This is a [kubernete deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) file. \
 To change default file and folder locations there is a possibility to change them in [`template-deployment.yaml`](/template-deployment.yaml) or `deployment.yaml` by changing path variable. 
 
 ### [**`setup.sh`**](/setup.sh)
+This file is used to automatically setup containers and deployment file by simply running the script. 
 [`setup.sh`](/setup.sh) has 3 arugments.  
 `-h` or `--help` to show usage of `setup.sh`.  
 `-b` or `--build` to build all docker images  
