@@ -13,7 +13,7 @@ Kubernetes does not have relative paths thus there exists [`setup.sh`](/setup.sh
 
 ### **`executor`**
 Inside executor folder there is Dockerfile which creates container with puppeteer and openvpn.
-[`executor/files`](/executor/files/) contains all files that are used to create executor container. All code in [`executor/files`](/executor/files/) is in typescript(TS) and is compiled into folder [`executor/files/dist`](/executor/files/dist). 
+[`executor/files`](/executor/files/) contains all files that are used to create executor container. All code in [`executor/files`](/executor/files/) is in TypeScript (TS) and is compiled into folder [`executor/files/dist`](/executor/files/dist). 
 ### **`controller`**
 Controller is made from standard go image. Then application is build and run.
 Controller application is a webserver used to communicate between executor containers and to keep track which executor container uses which vpn configuration.
