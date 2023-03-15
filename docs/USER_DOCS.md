@@ -124,8 +124,8 @@ Name of custom worker is important as it needs to be same as `.ts` file in [`/ex
 `CustomWorker` interface has following methods that need to be implemented:
 * `init()` is run to initialize variables/state of `CustomWorker`. For example in [`/controller/app/customworker/cookiedispenser.go`](/controller/app/customworker/cookiedispenser.go) it is used to read all cookies.
 * `OnMessage(message string, ip string) string` is run when custom worker receives a message. For example in [`/controller/app/customworker/cookiedispenser.go`](/controller/app/customworker/cookiedispenser.go) it is used to give executor cookie file when it asks for it.
-  - `message`: message received from executer
-  - `ip`: ip of executer of the message
+  - `message`: message received from executor
+  - `ip`: ip of executor of the message
   - Returns: message to executor. 
 
 Third you need to create `.ts` file inside [`/executor/files/custom-workers`](/executor/files/custom-workers) with same name as registered in [`/controller/app/customworker/customworker.go`](/controller/app/customworker/customworker.go).
